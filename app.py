@@ -3,6 +3,7 @@ from bottle import Bottle, run, \
 
 import os
 import sys
+import sqlite3 as lite
 
 dirname = os.path.dirname(sys.argv[0])
 
@@ -28,5 +29,22 @@ def index():
             "root": dirname+'assets/js'}
     return template('index', data=data)
 
+@app.route('/products')
+def list_products():
+    conn = lite.connect('demo.sqlite')
+    c = conn.cursor()
+    c.execute("select * from products")
+    result = c.fetchall()
+    c.close()
+    return template('products', rows=result)
 
-run(app, host='localhost', port=8080)
+@app.route('/product/<pid>')
+def show(pid):
+    conn = lite.connect('demo.sqlite')
+    c = conn.cursor()
+    c.execute('select * from products where `index` = 1')
+    row = c.fetchone()
+    return template('product', product = row)
+
+
+run(app, host='localhost', port=8081)
