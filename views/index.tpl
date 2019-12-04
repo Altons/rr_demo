@@ -1,4 +1,4 @@
-% include('header.tpl', title='Page Title')
+% include('header.tpl')
 
     <main role="main" class="container">
 
@@ -17,6 +17,7 @@
             <ul class="list-styled">
               <li>Scrape content from website</li>
               <li>Read csv file</li>
+              <li>Copy database to destination</li>
               <li>Define workflow with Airflow</li>
             <ul>
           </div>

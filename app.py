@@ -4,6 +4,8 @@ from bottle import Bottle, run, \
 import os
 import sys
 import sqlite3 as lite
+from bottle import response
+from json import dumps
 
 dirname = os.path.dirname(sys.argv[0])
 
@@ -42,9 +44,34 @@ def list_products():
 def show(pid):
     conn = lite.connect('demo.sqlite')
     c = conn.cursor()
-    c.execute('select * from products where `index` = 1')
+    c.execute('select * from products where `index` = ?',(pid,))
     row = c.fetchone()
+    c.close()
     return template('product', product = row)
+
+@app.route('/country')
+def show():
+    return template('country')
+
+
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
+
+@app.route('/api/country/<name>')
+def return_json(name):
+    conn = lite.connect('demo.sqlite')
+    conn.row_factory = dict_factory
+    c = conn.cursor()
+    c.execute('select * from airlines  where UPPER(country) = UPPER(?)',(name,))
+    result = c.fetchall()
+    c.close()
+    if len(result) == 0:
+        result = [{ "id": -1, "country": "Country does not exist." }]
+    response.content_type = 'application/json'
+    return dumps(result)
 
 
 run(app, host='localhost', port=8081)
