@@ -24,12 +24,23 @@ def send_js(filename):
     return static_file(filename, root=dirname+'assets/js')
 
 
+@app.route('/images/<filename:re:.*\.png>')
+def send_image(filename):
+    return static_file(filename, root='assets/images', mimetype='image/png')
+
+
 @app.route('/')
 def index():
     data = {"developer_name": "Alberto Negron",
             "developer_organization": "Lucerne Solutions",
             "root": dirname+'assets/js'}
     return template('index', data=data)
+
+
+@app.route('/report')
+def report():
+    return template('report')
+
 
 @app.route('/products')
 def list_products():
@@ -40,14 +51,16 @@ def list_products():
     c.close()
     return template('products', rows=result)
 
+
 @app.route('/product/<pid>')
 def show(pid):
     conn = lite.connect('demo.sqlite')
     c = conn.cursor()
-    c.execute('select * from products where `index` = ?',(pid,))
+    c.execute('select * from products where `index` = ?', (pid,))
     row = c.fetchone()
     c.close()
-    return template('product', product = row)
+    return template('product', product=row)
+
 
 @app.route('/country')
 def show():
@@ -60,16 +73,17 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
+
 @app.route('/api/country/<name>')
 def return_json(name):
     conn = lite.connect('demo.sqlite')
     conn.row_factory = dict_factory
     c = conn.cursor()
-    c.execute('select * from airlines  where UPPER(country) = UPPER(?)',(name,))
+    c.execute('select * from airlines  where UPPER(country) = UPPER(?)', (name,))
     result = c.fetchall()
     c.close()
     if len(result) == 0:
-        result = [{ "id": -1, "country": "Country does not exist." }]
+        result = [{"id": -1, "country": "Country does not exist."}]
     response.content_type = 'application/json'
     return dumps(result)
 
